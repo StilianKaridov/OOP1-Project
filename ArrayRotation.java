@@ -13,7 +13,7 @@ public class ArrayRotation {
             for (int j = 0; j < arr.length - 1; j++) {
                 arr[j] = arr[j + 1];
             }
-            arr[arr.length - 1] = temp;
+            arr[arr.length - 1] = temo;
         }
         for (int i = 0; i < arr.length; i++) {
             System.out.print(arr[i] + " ");
