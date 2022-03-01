@@ -15,7 +15,7 @@ public class ArrayRotation {
             }
             arr[arr.length - 1] = tempo;
         }
-        for (int i = 0; i < arr.length; i++) {
+        
             
         }
     }
