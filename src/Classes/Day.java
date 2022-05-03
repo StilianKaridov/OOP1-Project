@@ -26,8 +26,8 @@ public class Day {
         return meets;
     }
 
-    public void setMeets(List<Book> meets) {
-        this.meets = meets;
+    public void setMeets(Book meets) {
+        this.meets.add(meets);
     }
 
     public boolean isHoliday() {

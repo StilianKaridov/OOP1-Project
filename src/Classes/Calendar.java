@@ -30,4 +30,9 @@ public class Calendar {
         month.put("December", new Month("December"));
         return month;
     }
+
+    public void book(String date, String startTime, String endTime, String name, String note){
+
+
+    }
 }
