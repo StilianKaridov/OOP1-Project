@@ -9,8 +9,7 @@ public class Date {
     private boolean isHoliday;
 
     public Date(String day, String month, String year) throws InvalidDateException {
-
-        if(validateDay(day, month, year) && validateMonth(month)){
+        if (validateDay(day, month, year) && validateMonth(month)) {
             this.day = day;
             this.month = month;
             this.year = year;
@@ -18,7 +17,6 @@ public class Date {
         } else {
             throw new InvalidDateException();
         }
-
     }
 
     public String getDay() {
@@ -67,7 +65,7 @@ public class Date {
                 break;
             case "2":
                 numberOfDays = 28;
-                if(Integer.parseInt(year) % 4 == 0){
+                if (Integer.parseInt(year) % 4 == 0) {
                     numberOfDays = 29;
                 }
                 break;
@@ -87,9 +85,9 @@ public class Date {
         }
     }
 
-    public boolean validateMonth(String month){
+    public boolean validateMonth(String month) {
         int monthNumber = Integer.parseInt(month);
-        if(monthNumber < 1 || monthNumber > 12){
+        if (monthNumber < 1 || monthNumber > 12) {
             return false;
         } else {
             return true;
