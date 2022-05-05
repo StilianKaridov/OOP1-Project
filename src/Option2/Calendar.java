@@ -1,6 +1,8 @@
 package Option2;
 
 import Exceptions.InvalidDateException;
+import Exceptions.InvalidTimeException;
+import Exceptions.IsNotFreeException;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -21,36 +23,58 @@ public class Calendar {
         return "Schedule for: " + meetings;
     }
 
-    public void book(Date date, Meet meet) throws InvalidDateException{
+    public void book(Date date, Meet meet) throws IsNotFreeException, InvalidDateException {
         LocalTime start;
         LocalTime end;
         LocalTime currentStart = LocalTime.parse(meet.getStartTime());
         LocalTime currentEnd = LocalTime.parse(meet.getEndTime());
-        for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
-            if (entry.getKey().getDay().equals(date.getDay()) &&
-                entry.getKey().getMonth().equals(date.getMonth()) &&
-                entry.getKey().getYear().equals(date.getYear())) {
-                for (Meet currentMeet : entry.getValue()) {
-                    start = LocalTime.parse(currentMeet.getStartTime());
-                    end = LocalTime.parse(currentMeet.getEndTime());
-                    if (currentStart.isBefore(start) && currentEnd.isAfter(start) || currentStart.isAfter(start) && currentStart.isBefore(end)) {
-                        throw new InvalidDateException();
+        List<Meet> list = new ArrayList<>();
+        if(meetings.isEmpty()){
+            list.add(meet);
+            meetings.put(date, list);
+        } else {
+            for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
+                if (entry.getKey().getDay().equals(date.getDay()) &&
+                        entry.getKey().getMonth().equals(date.getMonth()) &&
+                        entry.getKey().getYear().equals(date.getYear())) {
+                    for (Meet currentMeet : entry.getValue()) {
+                        start = LocalTime.parse(currentMeet.getStartTime());
+                        end = LocalTime.parse(currentMeet.getEndTime());
+                        if (currentStart.isBefore(start) && currentEnd.isAfter(start) || currentStart.isAfter(start) && currentStart.isBefore(end)) {
+                            throw new IsNotFreeException();
+                        }
                     }
+                    list = entry.getValue();
+                    list.add(meet);
+                    meetings.put(entry.getKey(), list);
+                } else {
+                    throw new InvalidDateException();
                 }
             }
         }
-
-        List<Meet> list = new ArrayList<>();
-        if (this.meetings.containsKey(date)) {
-            list = this.meetings.get(date);
-        }
-        list.add(meet);
-        this.meetings.put(date, list);
+        System.out.println("You successfully added the meeting!");
     }
 
-    public void unbook(Date date, String startTime, String endTime) {
-        //throw InvalidDateException if the date does not exist, throw InvalidTime if the time isn't right
-
+    public void unbook(Date date, String startTime, String endTime) throws IsNotFreeException, InvalidDateException, InvalidTimeException {
+        boolean timeExist = false;
+        for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
+            if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
+                for (Meet currentMeet : entry.getValue()) {
+                    if(currentMeet.getStartTime().equals(startTime) && currentMeet.getEndTime().equals(endTime)){
+                        meetings.get(entry.getKey()).remove(currentMeet);
+                        System.out.println("You successfully unbooked the meeting!");
+                        timeExist = true;
+                        break;
+                    }
+                }
+            } else {
+                throw new InvalidDateException();
+            }
+            break;
+        }
+        if(!timeExist){
+            throw new InvalidTimeException();
+        }
     }
 
 }
