@@ -1,6 +1,6 @@
 package Option2;
 
-public class Meet {
+public class Meet implements Comparable<Meet>{
     private String startTime;
     private String endTime;
     private String name;
@@ -45,13 +45,15 @@ public class Meet {
         this.note = note;
     }
 
-    public boolean validateTime(){
-        //Implement logic here
-        return true;
-    }
+    //Should consider method ValidateTime() with regex, and exception InvalidInput if not.
 
     @Override
     public String toString() {
         return "Meet: from " + startTime + " to " + endTime + " with " + name + " - " + note;
+    }
+
+    @Override
+    public int compareTo(Meet o) {
+        return this.getStartTime().compareTo(o.getStartTime());
     }
 }
