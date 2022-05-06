@@ -29,7 +29,7 @@ public class Calendar {
         LocalTime currentStart = LocalTime.parse(meet.getStartTime());
         LocalTime currentEnd = LocalTime.parse(meet.getEndTime());
         List<Meet> list = new ArrayList<>();
-        if(meetings.isEmpty()){
+        if (meetings.isEmpty()) {
             list.add(meet);
             meetings.put(date, list);
         } else {
@@ -60,7 +60,7 @@ public class Calendar {
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
             if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
                 for (Meet currentMeet : entry.getValue()) {
-                    if(currentMeet.getStartTime().equals(startTime) && currentMeet.getEndTime().equals(endTime)){
+                    if (currentMeet.getStartTime().equals(startTime) && currentMeet.getEndTime().equals(endTime)) {
                         meetings.get(entry.getKey()).remove(currentMeet);
                         System.out.println("You successfully unbooked the meeting!");
                         timeExist = true;
@@ -72,8 +72,17 @@ public class Calendar {
             }
             break;
         }
-        if(!timeExist){
+        if (!timeExist) {
             throw new InvalidTimeException();
+        }
+    }
+
+    public void agenda(Date date) {
+        for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
+            if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
+                Collections.sort(entry.getValue());
+                System.out.println("Agenda: " + entry.getValue());
+            }
         }
     }
 
