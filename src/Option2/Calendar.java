@@ -29,39 +29,43 @@ public class Calendar {
         LocalTime currentStart = LocalTime.parse(meet.getStartTime());
         LocalTime currentEnd = LocalTime.parse(meet.getEndTime());
         List<Meet> list = new ArrayList<>();
-        if (meetings.isEmpty() || !meetings.containsKey(date)) { // If the map is empty or the date didn't exist just put
-            list.add(meet);
-            meetings.put(date, list);
-        } else {
-            for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {  // Iterate over the map
-                if (entry.getKey().getDay().equals(date.getDay()) &&
-                        entry.getKey().getMonth().equals(date.getMonth()) &&
-                        entry.getKey().getYear().equals(date.getYear())) {   // If such a date exist, get the value, add the meet and put in the map
-                    for (Meet currentMeet : entry.getValue()) {  // Iterate over the date's list of meetings
-                        start = LocalTime.parse(currentMeet.getStartTime());
-                        end = LocalTime.parse(currentMeet.getEndTime());
-                        if (currentStart.isBefore(start) && currentEnd.isAfter(start) ||
-                            currentStart.isAfter(start) && currentStart.isBefore(end)) {  // Check if the time is free
-                            throw new IsNotFreeException();
+        if (!date.isHoliday()) {
+            if (meetings.isEmpty() || !meetings.containsKey(date)) { // If the map is empty or the date didn't exist just put
+                list.add(meet);
+                meetings.put(date, list);
+            } else {
+                for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {  // Iterate over the map
+                    if (entry.getKey().getDay().equals(date.getDay()) &&
+                            entry.getKey().getMonth().equals(date.getMonth()) &&
+                            entry.getKey().getYear().equals(date.getYear())) {   // If such a date exist, get the value, add the meet and put in the map
+                        for (Meet currentMeet : entry.getValue()) {  // Iterate over the date's list of meetings
+                            start = LocalTime.parse(currentMeet.getStartTime());
+                            end = LocalTime.parse(currentMeet.getEndTime());
+                            if (currentStart.isBefore(start) && currentEnd.isAfter(start) ||
+                                    currentStart.isAfter(start) && currentStart.isBefore(end)) {  // Check if the time is free
+                                throw new IsNotFreeException();
+                            }
                         }
+                        list = entry.getValue();    // Get the existing meetings
+                        list.add(meet);     // Add the meet to the existing meetings
+                        meetings.put(entry.getKey(), list);     // Put them in the map
+                    } else {
+                        throw new InvalidDateException();
                     }
-                    list = entry.getValue();    // Get the existing meetings
-                    list.add(meet);     // Add the meet to the existing meetings
-                    meetings.put(entry.getKey(), list);     // Put them in the map
-                } else {
-                    throw new InvalidDateException();
                 }
             }
+            System.out.println("You successfully added the meeting!");
+        } else {
+            System.out.println("The date is holiday");
         }
-        System.out.println("You successfully added the meeting!");
     }
 
     public void unbook(Date date, String startTime, String endTime) throws IsNotFreeException, InvalidDateException, InvalidTimeException {
         boolean timeExist = false;
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
             if (entry.getKey().getDay().equals(date.getDay()) &&
-                entry.getKey().getMonth().equals(date.getMonth()) &&
-                entry.getKey().getYear().equals(date.getYear())) {      // If the date exists iterate over the list of meetings
+                    entry.getKey().getMonth().equals(date.getMonth()) &&
+                    entry.getKey().getYear().equals(date.getYear())) {      // If the date exists iterate over the list of meetings
                 for (Meet currentMeet : entry.getValue()) {
                     if (currentMeet.getStartTime().equals(startTime) && currentMeet.getEndTime().equals(endTime)) {
                         meetings.get(entry.getKey()).remove(currentMeet);
@@ -80,7 +84,7 @@ public class Calendar {
         }
     }
 
-    public void agenda(Date date) throws InvalidDateException{
+    public void agenda(Date date) throws InvalidDateException {
         boolean isValid = false;
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
             if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
@@ -89,12 +93,12 @@ public class Calendar {
                 System.out.println("Agenda: " + entry.getValue());
             }
         }
-        if(!isValid){
+        if (!isValid) {
             throw new InvalidDateException();
         }
     }
 
-    public void change(Date date, String startTime, String option, String newValue) throws IsNotFreeException, InvalidDateException{
+    public void change(Date date, String startTime, String option, String newValue) throws IsNotFreeException, InvalidDateException {
         boolean isFulfilled = false;
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
             if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
@@ -111,7 +115,7 @@ public class Calendar {
                                 if (newDate.validateDay(newDay, newMonth, newYear) && newDate.validateMonth(newMonth)) {
                                     book(newDate, currentMeet);
                                     entry.getValue().remove(currentMeet);
-                                    if(entry.getValue().size() == 0){
+                                    if (entry.getValue().size() == 0) {
                                         meetings.remove(entry.getKey());
                                     }
                                 } else {
@@ -126,7 +130,7 @@ public class Calendar {
                                     LocalTime end = LocalTime.parse(meet.getEndTime());
                                     if (currentMeet.getStartTime().compareTo(meet.getStartTime()) == 0) {
                                         continue;
-                                    } else if (newStart.isBefore(start) && currentEnd.isAfter(start) || newStart.isAfter(start) && newStart.isBefore(end)){
+                                    } else if (newStart.isBefore(start) && currentEnd.isAfter(start) || newStart.isAfter(start) && newStart.isBefore(end)) {
                                         throw new IsNotFreeException();
                                     }
                                 }
@@ -140,7 +144,7 @@ public class Calendar {
                                     LocalTime end = LocalTime.parse(meet.getEndTime());
                                     if (currentMeet.getStartTime().compareTo(meet.getStartTime()) == 0) {
                                         continue;
-                                    } else if (currentStart.isBefore(start) && newEnd.isAfter(start) || currentStart.isAfter(start) && currentStart.isBefore(end)){
+                                    } else if (currentStart.isBefore(start) && newEnd.isAfter(start) || currentStart.isAfter(start) && currentStart.isBefore(end)) {
                                         throw new IsNotFreeException();
                                     }
                                 }
@@ -154,7 +158,7 @@ public class Calendar {
                                 break;
                         }
                     }
-                    if(isFulfilled){
+                    if (isFulfilled) {
                         break;
                     }
                 }
@@ -162,5 +166,36 @@ public class Calendar {
         }
     }
 
-    
+    public void find(String toFind) {
+        boolean isFound = false;
+        for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
+            for (Meet currentMeet : entry.getValue()) {
+                String name = currentMeet.getName();
+                String note = currentMeet.getNote();
+                if (name.contains(toFind) || note.contains(toFind)) {
+                    System.out.println(currentMeet.toString());
+                    isFound = true;
+                }
+            }
+        }
+
+        if (!isFound) {
+            System.out.println("No such meet with that name or note!");
+        }
+    }
+
+    public void holiday(Date date) throws InvalidDateException {
+        boolean isFound = false;
+        for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
+            if (entry.getKey().equals(date)) {
+                entry.getKey().setHoliday(true);
+                isFound = true;
+            }
+        }
+        if (!isFound) {
+            throw new InvalidDateException();
+        }
+    }
+
+
 }
