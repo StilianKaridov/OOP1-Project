@@ -54,25 +54,25 @@ public class Date {
     public boolean validateDay(String day, String month, String year) {
         int numberOfDays = 0;
         switch (month) {
-            case "1":
+            case "01":
             case "12":
             case "10":
-            case "8":
-            case "7":
-            case "5":
-            case "3":
+            case "08":
+            case "07":
+            case "05":
+            case "03":
                 numberOfDays = 31;
                 break;
-            case "2":
+            case "02":
                 numberOfDays = 28;
                 if (Integer.parseInt(year) % 4 == 0) {
                     numberOfDays = 29;
                 }
                 break;
-            case "4":
+            case "04":
             case "11":
-            case "9":
-            case "6":
+            case "09":
+            case "06":
                 numberOfDays = 30;
                 break;
         }

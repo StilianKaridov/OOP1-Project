@@ -4,7 +4,10 @@ import Exceptions.InvalidDateException;
 import Exceptions.InvalidTimeException;
 import Exceptions.IsNotFreeException;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Calendar {
@@ -35,20 +38,20 @@ public class Calendar {
                 meetings.put(date, list);
             } else {
                 for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {  // Iterate over the map
-                    if (entry.getKey().getDay().equals(date.getDay()) &&
-                            entry.getKey().getMonth().equals(date.getMonth()) &&
-                            entry.getKey().getYear().equals(date.getYear())) {   // If such a date exist, get the value, add the meet and put in the map
-                        for (Meet currentMeet : entry.getValue()) {  // Iterate over the date's list of meetings
-                            start = LocalTime.parse(currentMeet.getStartTime());
-                            end = LocalTime.parse(currentMeet.getEndTime());
-                            if (currentStart.isBefore(start) && currentEnd.isAfter(start) ||
-                                    currentStart.isAfter(start) && currentStart.isBefore(end)) {  // Check if the time is free
-                                throw new IsNotFreeException();
+                    if (meetings.containsKey(date)) {   // If such a date exist, get the value, add the meet and put in the map
+                        if(entry.getKey().equals(date)){
+                            for (Meet currentMeet : entry.getValue()) {  // Iterate over the date's list of meetings
+                                start = LocalTime.parse(currentMeet.getStartTime());
+                                end = LocalTime.parse(currentMeet.getEndTime());
+                                if (currentStart.isBefore(start) && currentEnd.isAfter(start) ||
+                                        currentStart.isAfter(start) && currentStart.isBefore(end)) {  // Check if the time is free
+                                    throw new IsNotFreeException();
+                                }
                             }
+                            list = entry.getValue();    // Get the existing meetings
+                            list.add(meet);     // Add the meet to the existing meetings
+                            meetings.put(entry.getKey(), list);     // Put them in the map
                         }
-                        list = entry.getValue();    // Get the existing meetings
-                        list.add(meet);     // Add the meet to the existing meetings
-                        meetings.put(entry.getKey(), list);     // Put them in the map
                     } else {
                         throw new InvalidDateException();
                     }
@@ -60,20 +63,21 @@ public class Calendar {
         }
     }
 
-    public void unbook(Date date, String startTime, String endTime) throws IsNotFreeException, InvalidDateException, InvalidTimeException {
+    public void unbook(Date date, String startTime, String endTime) throws InvalidDateException, InvalidTimeException {
         boolean timeExist = false;
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
-            if (entry.getKey().getDay().equals(date.getDay()) &&
-                    entry.getKey().getMonth().equals(date.getMonth()) &&
-                    entry.getKey().getYear().equals(date.getYear())) {      // If the date exists iterate over the list of meetings
-                for (Meet currentMeet : entry.getValue()) {
-                    if (currentMeet.getStartTime().equals(startTime) && currentMeet.getEndTime().equals(endTime)) {
-                        meetings.get(entry.getKey()).remove(currentMeet);
-                        System.out.println("You successfully unbooked the meeting!");
-                        timeExist = true;
-                        break;
+            if (meetings.containsKey(date)) {      // If the date exists iterate over the list of meetings
+                if(entry.getKey().equals(date)){
+                    for (Meet currentMeet : entry.getValue()) {
+                        if (currentMeet.getStartTime().equals(startTime) && currentMeet.getEndTime().equals(endTime)) {
+                            meetings.get(entry.getKey()).remove(currentMeet);
+                            System.out.println("You successfully unbooked the meeting!");
+                            timeExist = true;
+                            break;
+                        }
                     }
                 }
+
             } else {
                 throw new InvalidDateException();
             }
@@ -87,10 +91,11 @@ public class Calendar {
     public void agenda(Date date) throws InvalidDateException {
         boolean isValid = false;
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
-            if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
+            if (entry.getKey().equals(date)) {
                 Collections.sort(entry.getValue());
                 isValid = true;
                 System.out.println("Agenda: " + entry.getValue());
+                break;
             }
         }
         if (!isValid) {
@@ -101,7 +106,7 @@ public class Calendar {
     public void change(Date date, String startTime, String option, String newValue) throws IsNotFreeException, InvalidDateException {
         boolean isFulfilled = false;
         for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
-            if (entry.getKey().getDay().equals(date.getDay()) && entry.getKey().getMonth().equals(date.getMonth()) && entry.getKey().getYear().equals(date.getYear())) {
+            if (meetings.containsKey(date)) {
                 for (Meet currentMeet : entry.getValue()) {
                     if (currentMeet.getStartTime().equals(startTime)) {
                         isFulfilled = true;
@@ -197,5 +202,51 @@ public class Calendar {
         }
     }
 
+    public void busyDays(Date startDate, Date endDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/uu");
 
+        //Parse the given Date objects to LocalDate
+        StringBuilder start = new StringBuilder(startDate.getDay());
+        start.append("/").append(startDate.getMonth()).append("/").append(startDate.getYear());;
+
+        StringBuilder end = new StringBuilder(endDate.getDay());
+        end.append("/").append(endDate.getMonth()).append("/").append(endDate.getYear());;
+
+        LocalDate localStart = LocalDate.parse(start, formatter);
+        LocalDate localEnd = LocalDate.parse(end, formatter);
+
+        //Add the dates if they are from startDate to endDate
+        Map<Date, List<Meet>> dates = new LinkedHashMap<>();
+        for (Map.Entry<Date, List<Meet>> entry : meetings.entrySet()) {
+            String year = entry.getKey().getYear();
+            String month = entry.getKey().getMonth();
+            String day = entry.getKey().getDay();
+            StringBuilder date = new StringBuilder(day);
+            date.append("/").append(month).append("/").append(year);
+
+            LocalDate currentDate = LocalDate.parse(date, formatter);
+            if (currentDate.isAfter(localStart) && currentDate.isBefore(localEnd)) {
+                dates.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        //Sort and print the map by the count busy hours
+        Map<Date, Integer> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
+            int busyMinutes = 0;
+            Duration busyTime;
+            for (Meet currentMeet : entry.getValue()) {
+                LocalTime currentStartTime = LocalTime.parse(currentMeet.getStartTime());
+                LocalTime currentEndTime = LocalTime.parse(currentMeet.getEndTime());
+
+                busyTime = Duration.between(currentStartTime, currentEndTime);
+                busyMinutes += (int) busyTime.toMinutes();
+            }
+            sortedMap.put(entry.getKey(), busyMinutes);
+        }
+
+        sortedMap.entrySet().stream()
+                 .sorted(Map.Entry.<Date, Integer>comparingByValue().reversed())
+                 .forEach(System.out::println);
+    }
 }
