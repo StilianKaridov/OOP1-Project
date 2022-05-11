@@ -1,26 +1,27 @@
 import Exceptions.InvalidDateException;
 import Exceptions.InvalidTimeException;
 import Exceptions.IsNotFreeException;
-import Option2.Calendar;
-import Option2.Date;
-import Option2.Meet;
+import Classes.Calendar;
+import Classes.Date;
+import Classes.Meet;
+
+import java.time.LocalTime;
 
 
 public class Main {
-    public static void main(String[] args) throws InvalidDateException, IsNotFreeException {
+    public static void main(String[] args) throws InvalidDateException, IsNotFreeException, InvalidTimeException {
         Calendar calendar = new Calendar();
-        try {
-            Date date = new Date("31","12","22");
-            Meet meet = new Meet("12:24", "13:00", "Stilian", "To buy coffee");
-            calendar.book(date, meet);
-            Date date2 = new Date("32", "12", "22");
-            Meet meet2 = new Meet("12:20", "12:23", "Ivan", "Exception");
-            calendar.book(date2, meet2);
-            Date date3 = new Date("30", "12", "22");
-            calendar.unbook(date3, "12:20", "12:24");
-        } catch (InvalidDateException | IsNotFreeException | InvalidTimeException ignored){
-
-        }
-        System.out.println(calendar.toString());
+        Date date = new Date("01","01","22");
+        Meet meet = new Meet("12:10", "13:00", "Stilian", "First meet");
+        Meet meet2 = new Meet("08:00", "10:30", "Stilian", "Second meet");
+        calendar.book(date, meet);
+        calendar.book(date,meet2);
+        Date date2 = new Date("25", "03", "22");
+        Meet meet3 = new Meet("08:00", "13:00", "Ivan", "First meet");
+        Meet meet4 = new Meet("13:05", "17:00", "Ivan", "Second meet");
+        calendar.book(date2, meet3);
+        calendar.book(date2, meet4);
+        Date date3 = new Date("23","03", "22");
+        calendar.findSlot(date2, LocalTime.parse("01:00"));
     }
 }

@@ -1,4 +1,4 @@
-package Option2;
+package Classes;
 
 public class Meet implements Comparable<Meet>{
     private String startTime;
