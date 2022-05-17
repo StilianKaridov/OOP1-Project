@@ -1,14 +1,13 @@
 package Classes;
 
 import Exceptions.InvalidDateException;
-import Exceptions.InvalidDayException;
 
 public class Date {
     private String day;
     private String month;
     private boolean isHoliday;
 
-    public Date(String day, String month) throws InvalidDateException, InvalidDayException {
+    public Date(String day, String month) throws InvalidDateException {
         if (validateDay(day, month)) {
             this.day = day;
             this.month = month;
@@ -42,7 +41,7 @@ public class Date {
         isHoliday = holiday;
     }
 
-    public boolean validateDay(String day, String month) throws InvalidDayException{
+    public boolean validateDay(String day, String month) throws InvalidDateException{
         int numberOfDays = 0;
         switch (month) {
             case "1":

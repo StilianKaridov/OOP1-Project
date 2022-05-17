@@ -273,122 +273,177 @@ public class Calendar {
         }
     }
 
-    public void busyDays(Date startDate, Date endDate) {    //TODO if u can, do it with strings, not with date objects
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/uu");
+    public void busyDays(String startDate, String endDate) throws InvalidDateException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");    //Pattern of the date
+        String[] startDateInfo = startDate.split("/");  //Get the day and the month of the given startDate
+        String[] endDateInfo = endDate.split("/");      //Get the day and the month of the given endDate
 
-        //Parse the given Date objects to LocalDate
-        StringBuilder start = new StringBuilder(startDate.getDay());
-        start.append("/").append(startDate.getMonth()).append("/");
-
-        StringBuilder end = new StringBuilder(endDate.getDay());
-        end.append("/").append(endDate.getMonth()).append("/");
-
-        LocalDate localStart = LocalDate.parse(start, formatter);
-        LocalDate localEnd = LocalDate.parse(end, formatter);
-
-        //Add the dates if they are from startDate to endDate
-        Map<Date, List<Meet>> dates = new LinkedHashMap<>();
-        for (Map.Entry<Date, List<Meet>> entry : this.dates.entrySet()) {
-            String month = entry.getKey().getMonth();
-            String day = entry.getKey().getDay();
-            StringBuilder date = new StringBuilder(day);
-            date.append("/").append(month).append("/");
-
-            LocalDate currentDate = LocalDate.parse(date, formatter);
-            if (currentDate.isAfter(localStart) && currentDate.isBefore(localEnd)) {
-                dates.put(entry.getKey(), entry.getValue());
-            }
+        //Parse the given date to LocalDate
+        StringBuilder start = new StringBuilder();
+        if (Integer.parseInt(startDateInfo[0]) < 10) {      //If the given day is below 10, append 0
+            start.append("0");
         }
-
-        //Sort and print the map by the count busy hours
-        Map<Date, Integer> sortedMap = new LinkedHashMap<>();
-        for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
-            int busyMinutes = 0;
-            Duration busyTime;
-            for (Meet currentMeet : entry.getValue()) {
-                LocalTime currentStartTime = LocalTime.parse(currentMeet.getStartTime());
-                LocalTime currentEndTime = LocalTime.parse(currentMeet.getEndTime());
-
-                busyTime = Duration.between(currentStartTime, currentEndTime);
-                busyMinutes += (int) busyTime.toMinutes();
-            }
-            sortedMap.put(entry.getKey(), busyMinutes);
+        start.append(startDateInfo[0]);     //Append the given day
+        start.append("/");
+        if (Integer.parseInt(startDateInfo[1]) < 10) {      //If the given month is below 10, append 0
+            start.append("0");
         }
+        start.append(startDateInfo[1]).append("/").append("2022");      //Append the given month, and the year 2022
 
-        sortedMap.entrySet().stream()
-                .sorted(Map.Entry.<Date, Integer>comparingByValue().reversed())
-                .forEach(System.out::println);
+        StringBuilder end = new StringBuilder();
+        if (Integer.parseInt(endDateInfo[0]) < 10) {        //If the given day is below 10, append 0
+            end.append("0");
+        }
+        end.append(endDateInfo[0]);     //Append the given day
+        end.append("/");
+        if (Integer.parseInt(endDateInfo[1]) < 10) {        //If the given month is below 10, append 0
+            end.append("0");
+        }
+        end.append(endDateInfo[1]).append("/").append("2022");      //Append the given month, and the year 2022
+
+        //Creating two object of class Date, so we can validate them
+        Date validateStart = new Date(startDateInfo[0], startDateInfo[1]);
+        Date validateEnd = new Date(endDateInfo[0], endDateInfo[1]);
+
+        //If both dates are valid proceed, else throw an InvalidDate exception
+        if (validateStart.validateDay(startDateInfo[0], startDateInfo[1]) && validateEnd.validateDay(endDateInfo[0], endDateInfo[1])) {
+            //Parse the string builders to LocalDates
+            LocalDate localStart = LocalDate.parse(start, formatter);
+            LocalDate localEnd = LocalDate.parse(end, formatter);
+
+            //Add the dates if they are from startDate to endDate
+            Map<Date, List<Meet>> dates = new LinkedHashMap<>();
+            for (Map.Entry<Date, List<Meet>> entry : this.dates.entrySet()) {
+                String day = entry.getKey().getDay();
+                String month = entry.getKey().getMonth();
+
+                StringBuilder date = new StringBuilder();
+                if (Integer.parseInt(day) < 10) {
+                    date.append("0");
+                }
+                date.append(day);
+                date.append("/");
+                if (Integer.parseInt(month) < 10) {
+                    date.append("0");
+                }
+                date.append(month).append("/").append("2022");
+
+                LocalDate currentDate = LocalDate.parse(date, formatter);
+                if (currentDate.equals(localStart) || currentDate.equals(localEnd)) {       //If the currentDate == startDate || currentDate == endDate, put
+                    dates.put(entry.getKey(), entry.getValue());
+                } else if (currentDate.isAfter(localStart) && currentDate.isBefore(localEnd)) {     //If the currentDate is between startDate and endDate, put
+                    dates.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            //Sort and print the map by the count busy hours
+            Map<Date, Integer> sortedMap = new LinkedHashMap<>();
+            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
+                int busyMinutes = 0;
+                Duration busyTime;
+                for (Meet currentMeet : entry.getValue()) {
+                    LocalTime currentStartTime = LocalTime.parse(currentMeet.getStartTime());   //Get startTime for the currentMeet
+                    LocalTime currentEndTime = LocalTime.parse(currentMeet.getEndTime());       //Get the endTime for the currentMeet
+
+                    busyTime = Duration.between(currentStartTime, currentEndTime);  //Get the duration of the currentMeet
+                    busyMinutes += (int) busyTime.toMinutes();      //Add the time to the variable
+                }
+                sortedMap.put(entry.getKey(), busyMinutes);     //Put in the map, which we will sort later
+            }
+
+            //Stream for sorting and printing values in the map
+            sortedMap.entrySet().stream()
+                    .sorted(Map.Entry.<Date, Integer>comparingByValue().reversed())
+                    .forEach(System.out::println);
+        } else {
+            throw new InvalidDateException();
+        }
     }
 
-//    public void findSlot(Date fromDate, Duration hours) {
-//        LocalTime startWorkDay = LocalTime.parse("08:00");
-//        LocalTime endWorkDay = LocalTime.parse("17:00");
-//        StringBuilder string = new StringBuilder(fromDate.getDay());
-//        string.append("/").append(fromDate.getMonth()).append("/");
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/uu");
-//        boolean isBooked = false;
-//        boolean doesContain = false;
-//
-//        boolean after = false;
-//        //TODO try with foreach, when the day and month are equal to entry-day and entry-month then check if the date.isHoliday and proceed
-//        for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
-//            if (!entry.getKey().isHoliday()) {
-//                if (entry.getKey().getDay().equals(dayAndMonth[0]) && entry.getKey().getMonth().equals(dayAndMonth[1])) {
-//
-//                    after = true;
-//                } else if (after) {
-//
-//                }
-//            }
-//
-//        }
-//
-//
-//        LocalDate date = LocalDate.parse(string, formatter);
-//        for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
-//            if (entry.getKey().getDay().equals(fromDate.getDay()) &&
-//                    entry.getKey().getMonth().equals(fromDate.getMonth())) {
-//                doesContain = true;
-//                break;
-//            }
-//        }
-//
-//        for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
-//            if (!fromDate.isHoliday()) {
-//                if (!doesContain) {
-//
-//                    isBooked = true;
-//                    break;
-//                } else {
-//                    LocalTime startTime;
-//                    LocalTime endTime;
-//                    entry.getValue().sort(Comparator.comparing(Meet::getStartTime));
-//                    for (int i = 0; i < entry.getValue().size(); i++) {
-//                        startTime = LocalTime.parse(entry.getValue().get(i).getStartTime());
-//                        endTime = LocalTime.parse(entry.getValue().get(i).getEndTime());
-//
-//                        if (startTime.minusMinutes(hours.toMinutes()).isBefore(startWorkDay) || endTime.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
-//                            isBooked = true;
-//                            break;
-//                        }
-//                    }
-//
-//                    if (isBooked) {
-//                        System.out.println("You can book a meet on " + fromDate.toString());
-//                        break;
-//                    } else {
-//                        date = date.plusDays(1);
-//                        String newDay = String.valueOf(date.getDayOfMonth());
-//                        String newMonth = "0" + date.getMonthValue();
-//                        String newYear = String.valueOf(date.getYear());
-//                        fromDate = new Date(newDay, newMonth);
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    public void findSlotWith(Date fromDate, LocalTime hours, Calendar calendar) {
+    public void findSlot(String fromDate, Duration hours) throws InvalidDateException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalTime startWorkDay = LocalTime.parse("08:00");
+        LocalTime endWorkDay = LocalTime.parse("17:00");
 
-//}
+        String[] dateInfo = fromDate.split("/");      //Get the day and the month of the given date
+
+        //Parse the given date to LocalDate
+        StringBuilder startDate = new StringBuilder();
+        if (Integer.parseInt(dateInfo[0]) < 10) {      //If the given day is below 10, append 0
+            startDate.append("0");
+        }
+        startDate.append(dateInfo[0]);     //Append the given day
+        startDate.append("/");
+        if (Integer.parseInt(dateInfo[1]) < 10) {      //If the given month is below 10, append 0
+            startDate.append("0");
+        }
+        startDate.append(dateInfo[1]).append("/").append("2022");      //Append the given month, and the year 2022
+        LocalDate date = LocalDate.parse(startDate, formatter);
+
+        boolean isAfter = false;  //To check if we passed the given date
+        boolean isBooked = false; //To check whether it is possible to book a meet on a given day
+
+        //Create an object, so we can validate the date
+        Date validate = new Date(dateInfo[0], dateInfo[1]);
+        if (validate.validateDay(dateInfo[0], dateInfo[1])) {       //If the dates are valid proceed, else throw an InvalidDate exception
+            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
+                if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth()) || isAfter) {
+                    entry.getValue().sort(Comparator.comparing(Meet::getStartTime));
+                    if (!entry.getKey().isHoliday()) {
+                        if (entry.getValue().size() == 0) {
+                            isBooked = true;
+                        } else if (entry.getValue().size() == 1) {
+                            LocalTime timeStart = LocalTime.parse(entry.getValue().get(0).getStartTime());
+                            LocalTime timeEnd = LocalTime.parse(entry.getValue().get(0).getEndTime());
+                            if (timeStart.minusMinutes(hours.toMinutes()).isAfter(startWorkDay) || timeEnd.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
+                                isBooked = true;
+                                break;
+                            }
+                        } else {
+                            for (int i = 0; i < entry.getValue().size(); i++) {
+                                LocalTime startTime = LocalTime.parse(entry.getValue().get(i).getStartTime());
+                                LocalTime endTime = LocalTime.parse(entry.getValue().get(i).getEndTime());
+                                if (i < entry.getValue().size() - 1) {
+                                    LocalTime nextStart = LocalTime.parse(entry.getValue().get(i + 1).getStartTime());
+                                    if (endTime.plusMinutes(hours.toMinutes()).isBefore(nextStart)) {
+                                        LocalTime startTimeSlot = endTime.plusMinutes(1);
+                                        LocalTime endTimeSlot = startTimeSlot.plusMinutes(hours.toMinutes());
+                                        if(startTimeSlot.isAfter(startWorkDay) && endTimeSlot.isBefore(endWorkDay)){
+                                            isBooked = true;
+                                            break;
+                                        }
+                                        //startTimeSlot = endTime.plusMinutes(1);
+                                        //endTimeSlot = nextStart.minusMinutes(1);
+                                        //Creating new Meet object-Parse the start and end time
+                                        //if(start.isAfter(8:00 && end.isBefore(17:00)
+                                    }
+                                } else {
+                                    if(endTime.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)){
+                                        isBooked = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    isAfter = true;
+                }
+
+                if (isBooked) {
+                    System.out.println("You can book a meet on " + entry.getKey().toString());
+                    break;
+                }
+
+            }
+            if (!isBooked) {
+                System.out.println("You can't book a meet!");
+            }
+        } else {
+            throw new InvalidDateException();
+        }
+    }
+
+    public void findSlotWith(Date fromDate, LocalTime hours, Calendar calendar) {
+
+    }
 }
