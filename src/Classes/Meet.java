@@ -1,10 +1,25 @@
 package Classes;
 
-public class Meet implements Comparable<Meet>{
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+
+@XmlRootElement(name = "meet")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Meet implements Comparable<Meet> {
+    @XmlElement(name = "startTime")
     private String startTime;
+    @XmlElement(name = "endTime")
     private String endTime;
+    @XmlElement(name = "personName")
     private String name;
+    @XmlElement(name = "note")
     private String note;
+
+    public Meet() {
+    }
 
     public Meet(String startTime, String endTime, String name, String note) {
         this.startTime = startTime;
@@ -20,6 +35,7 @@ public class Meet implements Comparable<Meet>{
     public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
+
 
     public String getEndTime() {
         return endTime;
@@ -44,8 +60,6 @@ public class Meet implements Comparable<Meet>{
     public void setNote(String note) {
         this.note = note;
     }
-
-    //Should consider method ValidateTime() with regex, and exception InvalidInput if not.
 
     @Override
     public String toString() {

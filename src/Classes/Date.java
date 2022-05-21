@@ -2,10 +2,25 @@ package Classes;
 
 import Exceptions.InvalidDateException;
 
-public class Date {
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+
+
+@XmlRootElement(name = "date")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Date implements Serializable {
+    @XmlElement(name = "day")
     private String day;
+    @XmlElement(name = "month")
     private String month;
+    @XmlElement(name = "holiday")
     private boolean isHoliday;
+
+    public Date() {
+    }
 
     public Date(String day, String month) throws InvalidDateException {
         if (validateDay(day, month)) {
@@ -42,7 +57,7 @@ public class Date {
     }
 
     public boolean validateDay(String day, String month) throws InvalidDateException{
-        int numberOfDays = 0;
+        int numberOfDays;
         switch (month) {
             case "1":
             case "12":

@@ -4,17 +4,25 @@ import Exceptions.InvalidDateException;
 import Exceptions.InvalidTimeException;
 import Exceptions.IsNotFreeException;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class Calendar {
+@XmlRootElement(name = "calendar")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Calendar implements Serializable {
 
+    @XmlElement(name = "dates")
     private Map<Date, List<Meet>> dates;
 
-    public Map<Date, List<Meet>> addDates() {   //Add all 365 days into the map
+    public Map<Date, List<Meet>> setDates() {   //Add all 365 days into the map
         Map<Date, List<Meet>> map = new LinkedHashMap<>();
         for (int i = 1; i <= 12; i++) {
             String month = String.valueOf(i);
@@ -80,7 +88,7 @@ public class Calendar {
     }
 
     public Calendar() {
-        this.dates = addDates();
+        this.dates = setDates();
     }
 
     public Map<Date, List<Meet>> getDates() {
@@ -116,6 +124,7 @@ public class Calendar {
                         list = entry.getValue();    // Get the existing meetings
                         list.add(meet);     // Add the meet to the existing meetings
                         dates.put(entry.getKey(), list);     // Put them in the map
+                        System.out.println("You successfully booked a meet!");
                     }
                 }
             }
@@ -386,13 +395,14 @@ public class Calendar {
         //Create an object, so we can validate the date
         Date validate = new Date(dateInfo[0], dateInfo[1]);
         if (validate.validateDay(dateInfo[0], dateInfo[1])) {       //If the dates are valid proceed, else throw an InvalidDate exception
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
-                if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth()) || isAfter) {
-                    entry.getValue().sort(Comparator.comparing(Meet::getStartTime));
-                    if (!entry.getKey().isHoliday()) {
-                        if (entry.getValue().size() == 0) {
+            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {        //Iterate over the dates
+                if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth()) || isAfter) {    //If currentKey equals the given date or we are after the given date
+                    entry.getValue().sort(Comparator.comparing(Meet::getStartTime));    //Sort the meetings by startTime
+                    if (!entry.getKey().isHoliday()) {      //Check if the date is not holiday
+                        if (entry.getValue().size() == 0 && hours.toMinutes() <= 540) {     //If the list of meetings is empty that means we can book a meet
                             isBooked = true;
                         } else if (entry.getValue().size() == 1) {
+                            //If we have only one meeting on that day, check if we can fit the meet between 08:00 and 17:00
                             LocalTime timeStart = LocalTime.parse(entry.getValue().get(0).getStartTime());
                             LocalTime timeEnd = LocalTime.parse(entry.getValue().get(0).getEndTime());
                             if (timeStart.minusMinutes(hours.toMinutes()).isAfter(startWorkDay) || timeEnd.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
@@ -400,25 +410,25 @@ public class Calendar {
                                 break;
                             }
                         } else {
+                            //If the meetings are more than 1, iterate over the list
                             for (int i = 0; i < entry.getValue().size(); i++) {
-                                LocalTime startTime = LocalTime.parse(entry.getValue().get(i).getStartTime());
                                 LocalTime endTime = LocalTime.parse(entry.getValue().get(i).getEndTime());
                                 if (i < entry.getValue().size() - 1) {
                                     LocalTime nextStart = LocalTime.parse(entry.getValue().get(i + 1).getStartTime());
                                     if (endTime.plusMinutes(hours.toMinutes()).isBefore(nextStart)) {
                                         LocalTime startTimeSlot = endTime.plusMinutes(1);
                                         LocalTime endTimeSlot = startTimeSlot.plusMinutes(hours.toMinutes());
-                                        if(startTimeSlot.isAfter(startWorkDay) && endTimeSlot.isBefore(endWorkDay)){
+                                        if (startTimeSlot.isAfter(startWorkDay) && endTimeSlot.isBefore(endWorkDay)) {
                                             isBooked = true;
                                             break;
                                         }
-                                        //startTimeSlot = endTime.plusMinutes(1);
-                                        //endTimeSlot = nextStart.minusMinutes(1);
+                                        //startTimeSlot = endTime.plusMinutes(1)
+                                        //endTimeSlot = nextStart.minusMinutes(1)
                                         //Creating new Meet object-Parse the start and end time
                                         //if(start.isAfter(8:00 && end.isBefore(17:00)
                                     }
                                 } else {
-                                    if(endTime.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)){
+                                    if (endTime.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
                                         isBooked = true;
                                         break;
                                     }
@@ -426,7 +436,7 @@ public class Calendar {
                             }
                         }
                     }
-                    isAfter = true;
+                    isAfter = true;     //Make isAfter true, if we can't book a meet on the given date, so we can proceed to other days
                 }
 
                 if (isBooked) {
@@ -435,6 +445,7 @@ public class Calendar {
                 }
 
             }
+            //If all over the year we are busy, we can't book a meet
             if (!isBooked) {
                 System.out.println("You can't book a meet!");
             }
@@ -443,7 +454,8 @@ public class Calendar {
         }
     }
 
-    public void findSlotWith(Date fromDate, LocalTime hours, Calendar calendar) {
+    public void findSlotWith(String fromDate, Duration hours, String calendarFromFile) {
+        findSlot(fromDate, hours);
 
     }
 }
