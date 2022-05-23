@@ -1,19 +1,17 @@
 package Classes;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 
 
-@XmlRootElement(name = "meet")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Meet implements Comparable<Meet> {
+@XmlType(propOrder = { "startTime", "endTime", "name", "note"})
+public class Meet implements Comparable<Meet>, Serializable {
     @XmlElement(name = "startTime")
     private String startTime;
     @XmlElement(name = "endTime")
     private String endTime;
-    @XmlElement(name = "personName")
+    @XmlElement(name = "name")
     private String name;
     @XmlElement(name = "note")
     private String note;
@@ -35,7 +33,6 @@ public class Meet implements Comparable<Meet> {
     public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
-
 
     public String getEndTime() {
         return endTime;
