@@ -1,5 +1,6 @@
 package Classes;
 
+import Exceptions.CannotFindSlotException;
 import Exceptions.InvalidDateException;
 import Exceptions.InvalidTimeException;
 import Exceptions.IsNotFreeException;
@@ -55,7 +56,7 @@ public class Commands {
 
     //Opens and reads the file with the give path
     public void open(String fileDirectory) throws IOException, JAXBException {
-        if (isOpened()) {
+        if (getFileDirectory().equals(fileDirectory) && isOpened()) {
             System.out.println("You already opened that file!");
         } else {
             File file = new File(fileDirectory);    //Create file
@@ -89,12 +90,15 @@ public class Commands {
 
     //Closes currently opened file
     public void close() {
-        System.out.println("Successfully closed " + file.getName());
-        this.file = null;
-        this.fileDirectory = null;
-        this.calendar = new Calendar();
-        setOpened(false);
-
+        if (isOpened()) {
+            System.out.println("Successfully closed " + file.getName());
+            this.file = null;
+            this.fileDirectory = null;
+            this.calendar = new Calendar();
+            setOpened(false);
+        } else {
+            System.out.println("First you need to open a file!");
+        }
     }
 
     //Saves the changes on the currently opened file
@@ -154,12 +158,19 @@ public class Commands {
                 "\nmerge <calendar>     reads the info from the calendar from file and merges it with the current calendar\n\n");
     }
 
+    //Menu
     public void menu() throws JAXBException, IOException {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Choose operation: ");
         String input = scanner.nextLine();
         while (!input.equals("exit")) {
             String[] commands = input.split("\\s+");
+            String date;
+            String startTime;
+            String endTime;
+            String name;
+            String note;
+            String filePath;
             switch (commands[0].toLowerCase()) {
                 case "open":
                     System.out.print("Please enter file directory: ");
@@ -181,103 +192,163 @@ public class Commands {
                     help();
                     break;
                 case "book":
-                    System.out.print("Please give us a date in the format(1/1): ");
-                    String date = scanner.nextLine();
-                    System.out.print("Info for the date: ");
-                    System.out.print("\nStart time: ");
-                    String startTime = scanner.nextLine();
-                    System.out.print("End time: ");
-                    String endTime = scanner.nextLine();
-                    System.out.print("Name: ");
-                    String name = scanner.nextLine();
-                    System.out.print("Note: ");
-                    String note = scanner.nextLine();
-                    try {
-                        calendar.book(date, new Meet(startTime, endTime, name, note));
-                    } catch (IsNotFreeException | InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        System.out.print("Info for the date: ");
+                        System.out.print("\nStart time: ");
+                        startTime = scanner.nextLine();
+                        System.out.print("End time: ");
+                        endTime = scanner.nextLine();
+                        System.out.print("Name: ");
+                        name = scanner.nextLine();
+                        System.out.print("Note: ");
+                        note = scanner.nextLine();
+                        try {
+                            calendar.book(date, new Meet(startTime, endTime, name, note));
+                        } catch (IsNotFreeException | InvalidDateException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
+
                     break;
                 case "unbook":
-                    System.out.print("Please give us a date in the format(1/1): ");
-                    date = scanner.nextLine();
-                    System.out.print("Info for the date: ");
-                    System.out.print("\nStart time: ");
-                    startTime = scanner.nextLine();
-                    System.out.print("End time: ");
-                    endTime = scanner.nextLine();
-                    try {
-                        calendar.unbook(date, startTime, endTime);
-                    } catch (InvalidTimeException | InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        System.out.print("Info for the date: ");
+                        System.out.print("\nStart time: ");
+                        startTime = scanner.nextLine();
+                        System.out.print("End time: ");
+                        endTime = scanner.nextLine();
+                        try {
+                            calendar.unbook(date, startTime, endTime);
+                        } catch (InvalidTimeException | InvalidDateException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
                     break;
                 case "agenda":
-                    System.out.print("Please give us a date in the format(1/1): ");
-                    date = scanner.nextLine();
-                    try {
-                        calendar.agenda(date);
-                    } catch (InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        try {
+                            calendar.agenda(date);
+                        } catch (InvalidDateException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
+
                     break;
                 case "change":
-                    System.out.print("Please give us a date in the format(1/1): ");
-                    date = scanner.nextLine();
-                    System.out.print("\nStart time: ");
-                    startTime = scanner.nextLine();
-                    System.out.print("Option: ");
-                    String option = scanner.nextLine();
-                    System.out.print("New value: ");
-                    String newValue = scanner.nextLine();
-                    try {
-                        calendar.change(date, startTime, option, newValue);
-                    } catch (IsNotFreeException | InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        System.out.print("\nStart time: ");
+                        startTime = scanner.nextLine();
+                        System.out.print("Option: ");
+                        String option = scanner.nextLine();
+                        System.out.print("New value: ");
+                        String newValue = scanner.nextLine();
+                        try {
+                            calendar.change(date, startTime, option, newValue);
+                        } catch (IsNotFreeException | InvalidDateException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
+
                     break;
                 case "find":
-                    System.out.print("Search for: ");
-                    String toFind = scanner.nextLine();
-                    calendar.find(toFind);
+                    if (isOpened()) {
+                        System.out.print("Search for: ");
+                        String toFind = scanner.nextLine();
+                        calendar.find(toFind);
+                    } else {
+                        System.out.println("First you need to open a file!");
+                    }
                     break;
                 case "holiday":
-                    System.out.print("Please give us a date in the format(1/1): ");
-                    date = scanner.nextLine();
-                    try {
-                        calendar.holiday(date);
-                    } catch (InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        try {
+                            calendar.holiday(date);
+                        } catch (InvalidDateException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
                     break;
                 case "busydays":
-                    System.out.print("Please give us a start date in the format(1/1): ");
-                    date = scanner.nextLine();
-                    System.out.print("Please give us an end date in the format(1/1): ");
-                    String endDate = scanner.nextLine();
-                    try {
-                        calendar.busyDays(date, endDate);
-                    } catch (InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a start date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        System.out.print("Please give us an end date in the format(1/1): ");
+                        String endDate = scanner.nextLine();
+                        try {
+                            calendar.busyDays(date, endDate);
+                        } catch (InvalidDateException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
                     break;
                 case "findslot":
-                    System.out.print("Please give us a start date in the format(1/1): ");
-                    date = scanner.nextLine();
-                    System.out.print("Duration of the meet: ");
-                    String time = scanner.nextLine();
-                    Duration duration = Duration.parse(time);
-                    try {
-                        calendar.findSlot(date, duration);
-                    } catch (InvalidDateException e) {
+                    if (isOpened()) {
+                        System.out.print("Please give us a start date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        System.out.print("Duration of the meet: ");
+                        String time = scanner.nextLine();
+                        //Parse is giving exception, make it with stringBuilder
+                        String[] parsedDuration = time.split(":");
+                        Duration duration = Duration.parse("PT" + parsedDuration[0] + "H" + parsedDuration[1] + "M");
+                        try {
+                            calendar.findSlot(date, duration);
+                        } catch (InvalidDateException | CannotFindSlotException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
                     }
                     break;
                 case "findslotwith":
+                    if (isOpened()) {
+                        System.out.print("Please give us a start date in the format(1/1): ");
+                        date = scanner.nextLine();
+                        System.out.print("Duration of the meet: ");
+                        String time = scanner.nextLine();
+                        //Parse is giving exception, make it with stringBuilder
+                        String[] parsedDuration = time.split(":");
+                        Duration duration = Duration.parse("PT" + parsedDuration[0] + "H" + parsedDuration[1] + "M");
+                        System.out.print("File path to get the other calendar: ");
+                        filePath = scanner.nextLine();
+                        try {
+                            Calendar currentCalendar = getCalendar();
+                            open(filePath);
+                            currentCalendar.findSlotWith(date, duration, calendar);
+                        } catch (InvalidDateException | CannotFindSlotException e) {
 
+                        }
+                    } else {
+                        System.out.println("First you need to open a file!");
+                    }
                     break;
                 case "merge":
-
+                    if (isOpened()) {
+                        //merge
+                    } else {
+                        System.out.println("First you need to open a file!");
+                    }
                     break;
                 default:
                     System.out.println("Invalid operation!");
