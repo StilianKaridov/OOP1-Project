@@ -1,29 +1,29 @@
 package Classes;
 
+import Exceptions.CannotFindSlotException;
 import Exceptions.InvalidDateException;
 import Exceptions.InvalidTimeException;
 import Exceptions.IsNotFreeException;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.*;
 
+
 @XmlRootElement(name = "calendar")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class Calendar implements Serializable {
 
-    @XmlElement(name = "dates")
-    private Map<Date, List<Meet>> dates;
+    @XmlJavaTypeAdapter(Adapter.class)
+    private LinkedHashMap<Date, ArrayList<Meet>> dates;
 
-    public Map<Date, List<Meet>> setDates() {   //Add all 365 days into the map
-        Map<Date, List<Meet>> map = new LinkedHashMap<>();
+    public LinkedHashMap<Date, ArrayList<Meet>> setDates() {   //Add all 365 days into the map
+        LinkedHashMap<Date, ArrayList<Meet>> map = new LinkedHashMap<>();
         for (int i = 1; i <= 12; i++) {
             String month = String.valueOf(i);
             for (int j = 1; j <= 28; j++) {
@@ -91,7 +91,7 @@ public class Calendar implements Serializable {
         this.dates = setDates();
     }
 
-    public Map<Date, List<Meet>> getDates() {
+    public LinkedHashMap<Date, ArrayList<Meet>> getDates() {
         return dates;
     }
 
@@ -105,12 +105,12 @@ public class Calendar implements Serializable {
         LocalTime end;
         LocalTime currentStart = LocalTime.parse(meet.getStartTime());  //Start time of the parameter meet
         LocalTime currentEnd = LocalTime.parse(meet.getEndTime());  //End time of the parameter meet
-        List<Meet> list;    //To store meets, if any
+        ArrayList<Meet> list;    //To store meets, if any
         String[] dateInfo = date.split("/");    //Split the parameter date, so we can get the day and the month
         Date validate = new Date(dateInfo[0], dateInfo[1]);    //Create an instance of Date, so we can use Validate methods
 
         if (validate.validateDay(validate.getDay(), validate.getMonth())) {  //If the date is valid
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {    //Iterate over the map: dates
+            for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {    //Iterate over the map: dates
                 if (entry.getKey().getDay().equals(dateInfo[0]) && entry.getKey().getMonth().equals(dateInfo[1])) {     //If currentKey equals the date
                     if (!entry.getKey().isHoliday()) {  //And if it's not holiday
                         for (Meet currentMeet : entry.getValue()) {  // Iterate over the date's list of meetings
@@ -140,7 +140,7 @@ public class Calendar implements Serializable {
         Date validate = new Date(dateInfo[0], dateInfo[1]);    //Create an instance of Date, so we can use Validate methods
 
         if (validate.validateDay(validate.getDay(), validate.getMonth())) {  //If the date is valid
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {    //Iterate over the map
+            for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {    //Iterate over the map
                 if (entry.getKey().getDay().equals(dateInfo[0]) && entry.getKey().getMonth().equals(dateInfo[1])) {     //If currentKey equals the date
                     for (Meet currentMeet : entry.getValue()) {     //Iterate over the list of meetings
                         doesIterate = true;     //Make true, so we can break later
@@ -169,7 +169,7 @@ public class Calendar implements Serializable {
         String[] dateInfo = date.split("/");    //Get the day and the month of the given date
         Date validate = new Date(dateInfo[0], dateInfo[1]);     //Create instance of Date, so we can validate the given date
         if (validate.validateDay(validate.getDay(), validate.getMonth())) {   //If the date is valid
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {    //Iterate over the map
+            for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {    //Iterate over the map
                 if (entry.getKey().getDay().equals(dateInfo[0]) && entry.getKey().getMonth().equals(dateInfo[1])) {     //If currentKey equals date
                     Collections.sort(entry.getValue());     //Sort the list of meetings
                     isValid = true;
@@ -187,7 +187,7 @@ public class Calendar implements Serializable {
         String[] dateInfo = date.split("/");    //Get the day and the month of the given date
         Date validate = new Date(dateInfo[0], dateInfo[1]);     //Create instance of Date, so we can validate the given date
         if (validate.validateDay(validate.getDay(), validate.getMonth())) {     //If its valid proceed
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {    //Iterate over the map
+            for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {    //Iterate over the map
                 if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth())) {   //If the currentKey is equal to the given date
                     for (Meet currentMeet : entry.getValue()) {     //Iterate over the list of meetings
                         if (currentMeet.getStartTime().equals(startTime)) {     //If startTime equals the given startTime
@@ -250,7 +250,7 @@ public class Calendar implements Serializable {
 
     public void find(String toFind) {
         boolean isFound = false;
-        for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
+        for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {
             for (Meet currentMeet : entry.getValue()) {
                 String name = currentMeet.getName();
                 String note = currentMeet.getNote();
@@ -270,7 +270,7 @@ public class Calendar implements Serializable {
         String[] dateInfo = date.split("/");    //Get the day and the month of the given date
         Date validate = new Date(dateInfo[0], dateInfo[1]);     //Create instance of Date, so we can validate the given date
         if (validate.validateDay(validate.getDay(), validate.getMonth())) {     //Check if the date is valid
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {    //Iterate over the map
+            for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {    //Iterate over the map
                 if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth())) {   //If the currentKey is equal to the given date
                     entry.getKey().setHoliday(true);    //Set holiday = true
                     entry.getValue().clear();   //Remove all meetings on that date
@@ -319,10 +319,9 @@ public class Calendar implements Serializable {
             //Parse the string builders to LocalDates
             LocalDate localStart = LocalDate.parse(start, formatter);
             LocalDate localEnd = LocalDate.parse(end, formatter);
-
             //Add the dates if they are from startDate to endDate
-            Map<Date, List<Meet>> dates = new LinkedHashMap<>();
-            for (Map.Entry<Date, List<Meet>> entry : this.dates.entrySet()) {
+            Map<Date, ArrayList<Meet>> dates = new LinkedHashMap<>();
+            for (Map.Entry<Date, ArrayList<Meet>> entry : this.dates.entrySet()) {
                 String day = entry.getKey().getDay();
                 String month = entry.getKey().getMonth();
 
@@ -347,7 +346,7 @@ public class Calendar implements Serializable {
 
             //Sort and print the map by the count busy hours
             Map<Date, Integer> sortedMap = new LinkedHashMap<>();
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {
+            for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {
                 int busyMinutes = 0;
                 Duration busyTime;
                 for (Meet currentMeet : entry.getValue()) {
@@ -369,11 +368,10 @@ public class Calendar implements Serializable {
         }
     }
 
-    public void findSlot(String fromDate, Duration hours) throws InvalidDateException {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public Date findSlot(String fromDate, Duration hours) throws InvalidDateException, CannotFindSlotException {
+        Date date = null;         //To return this date, so we can use it for findslotwith
         LocalTime startWorkDay = LocalTime.parse("08:00");
         LocalTime endWorkDay = LocalTime.parse("17:00");
-
         String[] dateInfo = fromDate.split("/");      //Get the day and the month of the given date
 
         //Parse the given date to LocalDate
@@ -387,7 +385,6 @@ public class Calendar implements Serializable {
             startDate.append("0");
         }
         startDate.append(dateInfo[1]).append("/").append("2022");      //Append the given month, and the year 2022
-        LocalDate date = LocalDate.parse(startDate, formatter);
 
         boolean isAfter = false;  //To check if we passed the given date
         boolean isBooked = false; //To check whether it is possible to book a meet on a given day
@@ -395,67 +392,106 @@ public class Calendar implements Serializable {
         //Create an object, so we can validate the date
         Date validate = new Date(dateInfo[0], dateInfo[1]);
         if (validate.validateDay(dateInfo[0], dateInfo[1])) {       //If the dates are valid proceed, else throw an InvalidDate exception
-            for (Map.Entry<Date, List<Meet>> entry : dates.entrySet()) {        //Iterate over the dates
-                if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth()) || isAfter) {    //If currentKey equals the given date or we are after the given date
-                    entry.getValue().sort(Comparator.comparing(Meet::getStartTime));    //Sort the meetings by startTime
-                    if (!entry.getKey().isHoliday()) {      //Check if the date is not holiday
-                        if (entry.getValue().size() == 0 && hours.toMinutes() <= 540) {     //If the list of meetings is empty that means we can book a meet
-                            isBooked = true;
-                        } else if (entry.getValue().size() == 1) {
-                            //If we have only one meeting on that day, check if we can fit the meet between 08:00 and 17:00
-                            LocalTime timeStart = LocalTime.parse(entry.getValue().get(0).getStartTime());
-                            LocalTime timeEnd = LocalTime.parse(entry.getValue().get(0).getEndTime());
-                            if (timeStart.minusMinutes(hours.toMinutes()).isAfter(startWorkDay) || timeEnd.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
+            if (hours.toMinutes() > 540) {
+                System.out.println("The duration of the meet is very long!");
+            } else {
+                for (Map.Entry<Date, ArrayList<Meet>> entry : dates.entrySet()) {        //Iterate over the dates
+                    if (entry.getKey().getDay().equals(validate.getDay()) && entry.getKey().getMonth().equals(validate.getMonth()) || isAfter) {    //If currentKey equals the given date or we are after the given date
+                        entry.getValue().sort(Comparator.comparing(Meet::getStartTime));    //Sort the meetings by startTime
+                        if (!entry.getKey().isHoliday()) {      //Check if the date is not holiday
+                            if (entry.getValue().size() == 0 && hours.toMinutes() <= 540) {     //If the list of meetings is empty that means we can book a meet
                                 isBooked = true;
-                                break;
-                            }
-                        } else {
-                            //If the meetings are more than 1, iterate over the list
-                            for (int i = 0; i < entry.getValue().size(); i++) {
-                                LocalTime endTime = LocalTime.parse(entry.getValue().get(i).getEndTime());
-                                if (i < entry.getValue().size() - 1) {
-                                    LocalTime nextStart = LocalTime.parse(entry.getValue().get(i + 1).getStartTime());
-                                    if (endTime.plusMinutes(hours.toMinutes()).isBefore(nextStart)) {
-                                        LocalTime startTimeSlot = endTime.plusMinutes(1);
-                                        LocalTime endTimeSlot = startTimeSlot.plusMinutes(hours.toMinutes());
-                                        if (startTimeSlot.isAfter(startWorkDay) && endTimeSlot.isBefore(endWorkDay)) {
+                            } else if (entry.getValue().size() == 1) {
+                                //If we have only one meeting on that day, check if we can fit the meet between 08:00 and 17:00
+                                LocalTime timeStart = LocalTime.parse(entry.getValue().get(0).getStartTime());
+                                LocalTime timeEnd = LocalTime.parse(entry.getValue().get(0).getEndTime());
+                                if (timeStart.minusMinutes(hours.toMinutes()).isAfter(startWorkDay) &&
+                                        timeStart.minusMinutes(hours.toMinutes()).isBefore(LocalTime.parse("00:01")) ||
+                                        timeEnd.plusMinutes(hours.toMinutes()).isBefore(endWorkDay) &&
+                                                timeEnd.plusMinutes(hours.toMinutes()).isBefore(LocalTime.parse("23:59"))) {
+                                    isBooked = true;
+                                }
+                            } else {
+                                //If the meetings are more than 1, iterate over the list
+                                for (int i = 0; i < entry.getValue().size(); i++) {
+                                    LocalTime endTime = LocalTime.parse(entry.getValue().get(i).getEndTime());
+                                    if (i < entry.getValue().size() - 1) {
+                                        LocalTime nextStart = LocalTime.parse(entry.getValue().get(i + 1).getStartTime());
+                                        if (endTime.plusMinutes(hours.toMinutes()).isBefore(nextStart)) {
+                                            LocalTime startTimeSlot = endTime.plusMinutes(1);
+                                            LocalTime endTimeSlot = startTimeSlot.plusMinutes(hours.toMinutes());
+                                            if (startTimeSlot.isAfter(startWorkDay) && endTimeSlot.isBefore(endWorkDay)) {
+                                                isBooked = true;
+                                                break;
+                                            }
+                                            //startTimeSlot = endTime.plusMinutes(1)
+                                            //endTimeSlot = nextStart.minusMinutes(1)
+                                            //Creating new Meet object-Parse the start and end time
+                                            //if(start.isAfter(8:00 && end.isBefore(17:00)
+                                        }
+                                    } else {
+                                        if (endTime.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
                                             isBooked = true;
                                             break;
                                         }
-                                        //startTimeSlot = endTime.plusMinutes(1)
-                                        //endTimeSlot = nextStart.minusMinutes(1)
-                                        //Creating new Meet object-Parse the start and end time
-                                        //if(start.isAfter(8:00 && end.isBefore(17:00)
-                                    }
-                                } else {
-                                    if (endTime.plusMinutes(hours.toMinutes()).isBefore(endWorkDay)) {
-                                        isBooked = true;
-                                        break;
                                     }
                                 }
                             }
                         }
+                        isAfter = true;     //Make isAfter true, if we can't book a meet on the given date, so we can proceed to other days
                     }
-                    isAfter = true;     //Make isAfter true, if we can't book a meet on the given date, so we can proceed to other days
-                }
 
-                if (isBooked) {
-                    System.out.println("You can book a meet on " + entry.getKey().toString());
-                    break;
-                }
+                    if (isBooked) {
+                        date = entry.getKey();
+                        System.out.println("\nYou can book a meet on " + date);
+                        break;
+                    }
 
+                }
             }
+
             //If all over the year we are busy, we can't book a meet
             if (!isBooked) {
-                System.out.println("You can't book a meet!");
+                throw new CannotFindSlotException();
             }
         } else {
             throw new InvalidDateException();
         }
+        return date;
     }
 
-    public void findSlotWith(String fromDate, Duration hours, String calendarFromFile) {
-        findSlot(fromDate, hours);
+    public void findSlotWith(String fromDate, Duration hours, Calendar calendar) throws InvalidDateException, CannotFindSlotException {
+        try {
+            //Get the dates which findslot returns
+            Date date1 = this.findSlot(fromDate, hours);
+            Date date2 = calendar.findSlot(fromDate, hours);
 
+            //While they are not equal to each other, call findslot again
+            while (!date1.getDay().equals(date2.getDay()) || !date1.getMonth().equals(date2.getMonth())) {
+                //Parse day and month do integers, so we can compare them
+                int day1 = Integer.parseInt(date1.getDay());
+                int day2 = Integer.parseInt(date2.getDay());
+                int month1 = Integer.parseInt(date1.getMonth());
+                int month2 = Integer.parseInt(date2.getMonth());
+
+                //Compare them, and call findslot again with the bigger date
+                if (day1 > day2 || month1 > month2) {
+                    StringBuilder toContinueWithDate1 = new StringBuilder(String.valueOf(day1));
+                    toContinueWithDate1.append("/").append(String.valueOf(month1));
+                    date1 = this.findSlot(toContinueWithDate1.toString(), hours);
+                    date2 = this.findSlot(toContinueWithDate1.toString(), hours);
+                } else {
+                    StringBuilder toContinueWithDate2 = new StringBuilder(String.valueOf(day2));
+                    toContinueWithDate2.append("/").append(String.valueOf(month2));
+                    date1 = this.findSlot(toContinueWithDate2.toString(), hours);
+                    date2 = this.findSlot(toContinueWithDate2.toString(), hours);
+                }
+            }
+            System.out.println("You can book a meet in both calendars on " + date1);
+        } catch (InvalidDateException | CannotFindSlotException e) {
+
+        }
     }
+
+
 }
