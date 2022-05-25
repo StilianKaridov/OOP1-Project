@@ -327,7 +327,6 @@ public class Commands {
                         date = scanner.nextLine();
                         System.out.print("Duration of the meet: ");
                         String time = scanner.nextLine();
-                        //Parse is giving exception, make it with stringBuilder
                         String[] parsedDuration = time.split(":");
                         Duration duration = Duration.parse("PT" + parsedDuration[0] + "H" + parsedDuration[1] + "M");
                         System.out.print("File path to get the other calendar: ");
@@ -345,7 +344,11 @@ public class Commands {
                     break;
                 case "merge":
                     if (isOpened()) {
-                        //merge
+                        System.out.print("File path to get the other calendar: ");
+                        filePath = scanner.nextLine();
+                        Calendar currentCalendar = getCalendar();
+                        open(filePath);
+                        currentCalendar.merge(calendar);
                     } else {
                         System.out.println("First you need to open a file!");
                     }
