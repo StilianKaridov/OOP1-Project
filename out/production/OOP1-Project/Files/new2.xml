@@ -53,6 +53,12 @@
                 <month>1</month>
                 <isHoliday>false</isHoliday>
             </date>
+            <meet>
+                <startTime>15:30</startTime>
+                <endTime>15:35</endTime>
+                <name>dsa</name>
+                <note>da</note>
+            </meet>
         </list>
         <list>
             <date>

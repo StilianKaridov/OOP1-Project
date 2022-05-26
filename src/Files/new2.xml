@@ -18,20 +18,8 @@
             <date>
                 <day>2</day>
                 <month>1</month>
-                <isHoliday>false</isHoliday>
+                <isHoliday>true</isHoliday>
             </date>
-            <meet>
-                <startTime>14:50</startTime>
-                <endTime>15:00</endTime>
-                <name>Ivan</name>
-                <note>Neshto</note>
-            </meet>
-            <meet>
-                <startTime>13:39</startTime>
-                <endTime>14:32</endTime>
-                <name>Dragan</name>
-                <note>Idvam</note>
-            </meet>
         </list>
         <list>
             <date>

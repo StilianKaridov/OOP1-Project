@@ -342,17 +342,6 @@ public class Commands {
                         System.out.println("First you need to open a file!");
                     }
                     break;
-                case "merge":
-                    if (isOpened()) {
-                        System.out.print("File path to get the other calendar: ");
-                        filePath = scanner.nextLine();
-                        Calendar currentCalendar = getCalendar();
-                        open(filePath);
-                        currentCalendar.merge(calendar);
-                    } else {
-                        System.out.println("First you need to open a file!");
-                    }
-                    break;
                 default:
                     System.out.println("Invalid operation!");
                     break;

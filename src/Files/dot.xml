@@ -7,12 +7,6 @@
                 <month>1</month>
                 <isHoliday>false</isHoliday>
             </date>
-            <meet>
-                <startTime>12:30</startTime>
-                <endTime>13:30</endTime>
-                <name>Stilian</name>
-                <note>Neshto si</note>
-            </meet>
         </list>
         <list>
             <date>
